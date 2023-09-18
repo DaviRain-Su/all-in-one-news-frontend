@@ -5,7 +5,7 @@ pub mod types;
 use futures::future::join_all;
 
 use types::AIonResponse;
-pub static REBASE_BASE__API_URL: &str = "http://127.0.0.1:8000";
+pub static REBASE_BASE__API_URL: &str = "https://aion-qr8nz.ondigitalocean.app";
 
 fn main() {
     wasm_logger::init(wasm_logger::Config::default());
