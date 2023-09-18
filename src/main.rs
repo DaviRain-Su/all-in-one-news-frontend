@@ -6,6 +6,7 @@ use futures::future::join_all;
 
 use types::AIonResponse;
 pub static REBASE_BASE__API_URL: &str = "https://aion-qr8nz.ondigitalocean.app";
+pub static LOCAL_REBASE_BASE__API_URL: &str = "http://localhost:8000";
 
 fn main() {
     wasm_logger::init(wasm_logger::Config::default());
@@ -126,25 +127,25 @@ fn AionListing(cx: Scope, aion: AIonResponse) -> Element {
                     "{time}"
                 }
             }
-            div {
-                padding: "0.5rem",
-                display: "flex", // 行显示
-                color: "red",
-                div {
-                    display: "flex",
-                    flex_direction: "column",
-                    margin: "0.2rem",
-                    "Tag: "
-                }
-                for tg in tag {
-                    div {
-                        display: "flex",
-                        flex_direction: "column",
-                        margin: "0.2rem",
-                        " {tg}"
-                    }
-                }
-            }
+            // div {
+            //     padding: "0.5rem",
+            //     display: "flex", // 行显示
+            //     color: "red",
+            //     div {
+            //         display: "flex",
+            //         flex_direction: "column",
+            //         margin: "0.2rem",
+            //         "Tag: "
+            //     }
+            //     for tg in tag {
+            //         div {
+            //             display: "flex",
+            //             flex_direction: "column",
+            //             margin: "0.2rem",
+            //             " {tg}"
+            //         }
+            //     }
+            // }
         }
     })
 }
@@ -170,6 +171,7 @@ pub async fn get_aion_preview(id: i32) -> Result<AIonResponse, reqwest::Error> {
 
 pub async fn get_aions(count: usize) -> Result<Vec<AIonResponse>, reqwest::Error> {
     let url = format!("{}/ids", REBASE_BASE__API_URL);
+
     let aion_ids = &reqwest::get(&url).await?.json::<Vec<i32>>().await?[..count];
 
     let aion_futures = aion_ids[..usize::min(aion_ids.len(), count)]
