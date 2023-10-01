@@ -20,6 +20,7 @@ futures = "0.3.28"
 async-recursion = "1.0.5"
 log = "0.4.20"
 wasm-logger = "0.2.0"
+rand = "0.8.5"
 
 [dev-dependencies]
 tokio = { version = "1.32.0", features = ["full"] }

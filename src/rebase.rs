@@ -2,6 +2,7 @@ use crate::types::*;
 use crate::REBASE_BASE__API_URL;
 use dioxus::prelude::*;
 use futures::future::join_all;
+use rand::prelude::*;
 
 pub fn Aions(cx: Scope) -> Element {
     let aion = use_future(cx, (), |_| get_all_aions());
@@ -9,6 +10,7 @@ pub fn Aions(cx: Scope) -> Element {
     match aion.value() {
         Some(Ok(list)) => render! {
             div {
+
                 for item in list {
                     AionListing { aion: item.clone() }
                 }
@@ -42,7 +44,7 @@ fn AionListing(cx: Scope, aion: AIonResponse) -> Element {
     let AIonResponse {
         title,
         url,
-        author: by,
+        author: _,
         time,
         id,
         introduce,
@@ -52,19 +54,19 @@ fn AionListing(cx: Scope, aion: AIonResponse) -> Element {
     let full_aion = use_ref(cx, || None);
 
     let url = url.as_str();
-    let hostname = url
-        .trim_start_matches("https://")
-        .trim_start_matches("http://")
-        .trim_start_matches("www.");
 
     let time = time.format("%D %l:%M %p");
 
+    let random_color = generate_gradient_color();
+
     cx.render(rsx! {
         div {
-            padding: "0.5rem",
-            position: "relative",
+            display: "flex",
+            flex_direction: "column",
             border: "1px solid #ddd",
             border_radius: "8px",
+            background: "{random_color}", /* 设置随机颜色渐变 */
+
             onmouseenter: move |_event| {
                 resolve_aion(full_aion.clone(), preview_state.clone(), *id)
             },
@@ -78,13 +80,6 @@ fn AionListing(cx: Scope, aion: AIonResponse) -> Element {
                         resolve_aion(full_aion.clone(), preview_state.clone(), *id)
                     },
                     "{title}"
-                }
-
-                a {
-                    color: "gray",
-                    href: url,
-                    text_decoration: "none",
-                    " ({hostname})"
                 }
             }
 
@@ -100,16 +95,27 @@ fn AionListing(cx: Scope, aion: AIonResponse) -> Element {
 
                 div {
                     padding_left: "0.5rem",
-                    "by {by}"
-                }
-
-                div {
-                    padding_left: "0.5rem",
                     "{time}"
                 }
             }
         }
     })
+}
+
+fn generate_random_color() -> String {
+    let mut rng = rand::thread_rng();
+    let color1: u8 = rng.gen();
+    let color2: u8 = rng.gen();
+    let color3: u8 = rng.gen();
+
+    format!("rgb({}, {}, {})", color1, color2, color3)
+}
+
+fn generate_gradient_color() -> String {
+    let start_color = generate_random_color();
+    let end_color = generate_random_color();
+
+    format!("linear-gradient(to right, {}, {})", start_color, end_color)
 }
 
 #[derive(Clone, Debug)]
