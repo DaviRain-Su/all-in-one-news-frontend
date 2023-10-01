@@ -1,7 +1,6 @@
 use crate::types::*;
 use crate::REBASE_BASE__API_URL;
 use dioxus::prelude::*;
-use futures::future::join_all;
 
 pub fn Aions(cx: Scope) -> Element {
     let aion = use_future(cx, (), |_| get_latest_aions());
@@ -22,7 +21,7 @@ pub fn Aions(cx: Scope) -> Element {
 async fn resolve_aion(
     full_story: UseRef<Option<AIonResponse>>,
     preview_state: UseSharedState<PreviewState>,
-    story_id: i32,
+    hash: String,
 ) {
     if let Some(cached) = &*full_story.read() {
         *preview_state.write() = PreviewState::Loaded(cached.clone());
@@ -30,7 +29,7 @@ async fn resolve_aion(
     }
 
     *preview_state.write() = PreviewState::Loading;
-    if let Ok(story) = get_aion_preview(story_id).await {
+    if let Ok(story) = get_aion_preview(hash).await {
         *preview_state.write() = PreviewState::Loaded(story.clone());
         *full_story.write() = Some(story);
     }
@@ -42,11 +41,11 @@ fn AionListing(cx: Scope, aion: AIonResponse) -> Element {
     let AIonResponse {
         title,
         url,
-        author: by,
+        author: _,
         time,
-        id,
         introduce,
         tag: _,
+        hash,
         ..
     } = aion;
     let full_aion = use_ref(cx, || None);
@@ -64,14 +63,14 @@ fn AionListing(cx: Scope, aion: AIonResponse) -> Element {
             padding: "0.5rem",
             position: "relative",
             onmouseenter: move |_event| {
-                resolve_aion(full_aion.clone(), preview_state.clone(), *id)
+                resolve_aion(full_aion.clone(), preview_state.clone(), hash.clone())
             },
             div {
                 font_size: "1.5rem",
                 a {
                     href: url,
                     onfocus: move |_event| {
-                        resolve_aion(full_aion.clone(), preview_state.clone(), *id)
+                        resolve_aion(full_aion.clone(), preview_state.clone(), hash.clone())
                     },
                     "{title}"
                 }
@@ -92,10 +91,6 @@ fn AionListing(cx: Scope, aion: AIonResponse) -> Element {
                 }
                 div {
                     padding_left: "0.5rem",
-                    "by {by}"
-                }
-                div {
-                    padding_left: "0.5rem",
                     "{time}"
                 }
             }
@@ -110,8 +105,8 @@ pub enum PreviewState {
     Loaded(AIonResponse),
 }
 
-pub async fn get_aion_preview(id: i32) -> Result<AIonResponse, reqwest::Error> {
-    let url = format!("{}/rustcc/by_id?id={}", REBASE_BASE__API_URL, id);
+pub async fn get_aion_preview(hash: String) -> Result<AIonResponse, reqwest::Error> {
+    let url = format!("{}/rustcc/by_hash?hash={}", REBASE_BASE__API_URL, hash);
     let result = reqwest::get(&url)
         .await?
         .json::<Vec<AIonResponse>>()
@@ -120,21 +115,6 @@ pub async fn get_aion_preview(id: i32) -> Result<AIonResponse, reqwest::Error> {
     assert!(result.len() == 1);
 
     Ok(result.first().unwrap().clone())
-}
-
-pub async fn get_aions(count: usize) -> Result<Vec<AIonResponse>, reqwest::Error> {
-    let url = format!("{}/rustcc/ids", REBASE_BASE__API_URL);
-
-    let aion_ids = &reqwest::get(&url).await?.json::<Vec<i32>>().await?[..count];
-
-    let aion_futures = aion_ids[..usize::min(aion_ids.len(), count)]
-        .iter()
-        .map(|&aion_id| get_aion_preview(aion_id));
-    Ok(join_all(aion_futures)
-        .await
-        .into_iter()
-        .filter_map(|aion| aion.ok())
-        .collect())
 }
 
 pub async fn get_all_aions() -> Result<Vec<AIonResponse>, reqwest::Error> {
@@ -152,4 +132,25 @@ pub async fn get_latest_aions() -> Result<Vec<AIonResponse>, reqwest::Error> {
     let result = reqwest::get(url).await?.json::<Vec<AIonResponse>>().await?;
 
     Ok(result)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_get_aions() {
+        let aions = get_latest_aions().await.unwrap();
+        println!("aions = {:?}", aions);
+    }
+
+    #[tokio::test]
+    async fn test_get_aion_preview() {
+        let aion = get_aion_preview(
+            "637e364663a7265da4a0c665528c65adff6054195af9d285bb4b62b2d6971591".to_string(),
+        )
+        .await
+        .unwrap();
+        println!("aion = {:?}", aion);
+    }
 }

@@ -2,7 +2,6 @@ use crate::types::*;
 use crate::REBASE_BASE__API_URL;
 use dioxus::prelude::*;
 use futures::future::join_all;
-use rand::prelude::*;
 
 pub fn Aions(cx: Scope) -> Element {
     let aion = use_future(cx, (), |_| get_all_aions());
@@ -57,28 +56,29 @@ fn AionListing(cx: Scope, aion: AIonResponse) -> Element {
 
     let time = time.format("%D %l:%M %p");
 
-    let random_color = generate_gradient_color();
-
     cx.render(rsx! {
         div {
             display: "flex",
             flex_direction: "column",
-            border: "1px solid #ddd",
-            border_radius: "8px",
-            background: "{random_color}", /* 设置随机颜色渐变 */
+            border: "1px solid #4e4e4e", /* 更深的边框颜色 */
+
 
             onmouseenter: move |_event| {
                 resolve_aion(full_aion.clone(), preview_state.clone(), *id)
             },
 
             div {
-                font_size: "1.5rem",
+                font_size: "1.8rem", /* 更大的标题字体 */
+                color: "#ffffff", /* 白色文字 */
 
                 a {
                     href: url,
                     onfocus: move |_event| {
                         resolve_aion(full_aion.clone(), preview_state.clone(), *id)
                     },
+                    text_decoration: "none", /* 去掉链接下划线 */
+                    color: "#00aaff", /* Solana 蓝色链接颜色 */
+                    transition: "color 0.3s ease", /* 平滑的颜色过渡效果 */
                     "{title}"
                 }
             }
@@ -86,7 +86,7 @@ fn AionListing(cx: Scope, aion: AIonResponse) -> Element {
             div {
                 display: "flex",
                 flex_direction: "row",
-                color: "gray",
+                color: "#aaaaaa", /* 淡灰色文字 */
 
                 div {
                     padding_left: "0.5rem",
@@ -100,22 +100,6 @@ fn AionListing(cx: Scope, aion: AIonResponse) -> Element {
             }
         }
     })
-}
-
-fn generate_random_color() -> String {
-    let mut rng = rand::thread_rng();
-    let color1: u8 = rng.gen();
-    let color2: u8 = rng.gen();
-    let color3: u8 = rng.gen();
-
-    format!("rgb({}, {}, {})", color1, color2, color3)
-}
-
-fn generate_gradient_color() -> String {
-    let start_color = generate_random_color();
-    let end_color = generate_random_color();
-
-    format!("linear-gradient(to right, {}, {})", start_color, end_color)
 }
 
 #[derive(Clone, Debug)]
