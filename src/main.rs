@@ -5,7 +5,7 @@ pub mod rebase;
 pub mod rustcc;
 pub mod types;
 
-pub static REBASE_BASE__API_URL: &str = "https://aion-qr8nz.ondigitalocean.app";
+pub static REBASE_BASE__API_URL: &str = "https://aion-ginko.ondigitalocean.app";
 pub static LOCAL_REBASE_BASE__API_URL: &str = "http://localhost:8000";
 
 fn main() {
