@@ -1,4 +1,3 @@
-#![allow(non_snake_case)]
 use crate::types::*;
 use crate::REBASE_BASE__API_URL;
 use dioxus::prelude::*;
@@ -47,7 +46,7 @@ fn AionListing(cx: Scope, aion: AIonResponse) -> Element {
         time,
         id,
         introduce,
-        tag,
+        tag: _,
         ..
     } = aion;
     let full_aion = use_ref(cx, || None);
@@ -100,25 +99,6 @@ fn AionListing(cx: Scope, aion: AIonResponse) -> Element {
                     "{time}"
                 }
             }
-            // div {
-            //     padding: "0.5rem",
-            //     display: "flex", // 行显示
-            //     color: "red",
-            //     div {
-            //         display: "flex",
-            //         flex_direction: "column",
-            //         margin: "0.2rem",
-            //         "Tag: "
-            //     }
-            //     for tg in tag {
-            //         div {
-            //             display: "flex",
-            //             flex_direction: "column",
-            //             margin: "0.2rem",
-            //             " {tg}"
-            //         }
-            //     }
-            // }
         }
     })
 }
@@ -168,8 +148,7 @@ pub async fn get_all_aions() -> Result<Vec<AIonResponse>, reqwest::Error> {
 }
 
 pub async fn get_latest_aions() -> Result<Vec<AIonResponse>, reqwest::Error> {
-    // let url = format!("{}/rustcc/latest", REBASE_BASE__API_URL);
-    let url = "https://aion-qr8nz.ondigitalocean.app/rustcc/list_all";
+    let url = format!("{}/rustcc/latest", REBASE_BASE__API_URL);
     let result = reqwest::get(url).await?.json::<Vec<AIonResponse>>().await?;
 
     Ok(result)

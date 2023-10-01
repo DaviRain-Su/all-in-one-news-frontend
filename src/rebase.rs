@@ -1,4 +1,3 @@
-#![allow(non_snake_case)]
 use crate::types::*;
 use crate::REBASE_BASE__API_URL;
 use dioxus::prelude::*;
@@ -47,7 +46,7 @@ fn AionListing(cx: Scope, aion: AIonResponse) -> Element {
         time,
         id,
         introduce,
-        tag,
+        tag: _,
         ..
     } = aion;
     let full_aion = use_ref(cx, || None);
@@ -64,11 +63,15 @@ fn AionListing(cx: Scope, aion: AIonResponse) -> Element {
         div {
             padding: "0.5rem",
             position: "relative",
+            border: "1px solid #ddd",
+            border_radius: "8px",
             onmouseenter: move |_event| {
                 resolve_aion(full_aion.clone(), preview_state.clone(), *id)
             },
+
             div {
                 font_size: "1.5rem",
+
                 a {
                     href: url,
                     onfocus: move |_event| {
@@ -76,6 +79,7 @@ fn AionListing(cx: Scope, aion: AIonResponse) -> Element {
                     },
                     "{title}"
                 }
+
                 a {
                     color: "gray",
                     href: url,
@@ -83,42 +87,27 @@ fn AionListing(cx: Scope, aion: AIonResponse) -> Element {
                     " ({hostname})"
                 }
             }
+
             div {
                 display: "flex",
                 flex_direction: "row",
                 color: "gray",
+
                 div {
                     padding_left: "0.5rem",
                     "{introduce}"
                 }
+
                 div {
                     padding_left: "0.5rem",
                     "by {by}"
                 }
+
                 div {
                     padding_left: "0.5rem",
                     "{time}"
                 }
             }
-            // div {
-            //     padding: "0.5rem",
-            //     display: "flex", // 行显示
-            //     color: "red",
-            //     div {
-            //         display: "flex",
-            //         flex_direction: "column",
-            //         margin: "0.2rem",
-            //         "Tag: "
-            //     }
-            //     for tg in tag {
-            //         div {
-            //             display: "flex",
-            //             flex_direction: "column",
-            //             margin: "0.2rem",
-            //             " {tg}"
-            //         }
-            //     }
-            // }
         }
     })
 }
