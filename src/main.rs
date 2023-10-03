@@ -21,9 +21,6 @@ pub fn App(cx: Scope) -> Element {
     cx.render(rsx! {
         div {
             display: "flex",
-            flex_direction: "row",
-            width: "100%",
-            background: "#f0f0f0", /* 设置背景颜色 */
 
             div {
                 width: "100%",

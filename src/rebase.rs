@@ -4,8 +4,13 @@ use dioxus::prelude::*;
 use futures::future::join_all;
 
 pub fn Aions(cx: Scope) -> Element {
-    let aion = use_future(cx, (), |_| get_all_aions());
+    // let current_page = use_state(cx, || 0);
+    // let items_per_page = 10; // 你可以根据需要调整每页显示的项数
 
+    let aion = use_future(cx, (), |_| get_all_aions());
+    // let aion = use_future(cx, (current_page.get(),), |(page,)| {
+    // get_aions_page(page, 10)
+    // });
     match aion.value() {
         Some(Ok(list)) => render! {
             div {
@@ -13,6 +18,24 @@ pub fn Aions(cx: Scope) -> Element {
                 for item in list {
                     AionListing { aion: item.clone() }
                 }
+
+                // div {
+                //     display: "flex",
+                //     justify_content: "center",
+                //     margin_top: "1rem",
+                //     button {
+                //         onclick: move |_| current_page += 1,
+                //         "Previous Page"
+                //     },
+                //     span {
+                //         style: "0 1rem",
+                //         format!("Page {}", current_page.get() + 1)
+                //     },
+                //     button {
+                //         onclick: move |_| current_page -= 1,
+                //         "Next Page"
+                //     },
+                // }
             }
         },
         Some(Err(err)) => render! {"An error occurred while fetching stories {err}"},
