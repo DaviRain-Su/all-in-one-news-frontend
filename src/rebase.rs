@@ -43,7 +43,7 @@ fn AionListing(cx: Scope, aion: AIonResponse) -> Element {
     let AIonResponse {
         title,
         url,
-        author: _,
+        author: by,
         time,
         id,
         introduce,
@@ -60,7 +60,9 @@ fn AionListing(cx: Scope, aion: AIonResponse) -> Element {
         div {
             display: "flex",
             flex_direction: "column",
-            border: "1px solid #4e4e4e", /* 更深的边框颜色 */
+            border: "1px solid #ddd",
+            border_radius: "8px",
+            overflow: "hidden", /* 确保内容溢出时被隐藏 */
 
 
             onmouseenter: move |_event| {
@@ -68,20 +70,23 @@ fn AionListing(cx: Scope, aion: AIonResponse) -> Element {
             },
 
             div {
-                font_size: "1.8rem", /* 更大的标题字体 */
-                color: "#ffffff", /* 白色文字 */
+                padding: "1.2rem",
+                background: "#e0e8f0", /* 淡蓝灰色调背景，柔和而不晃眼 */
+                color: "#333", /* 深灰色文字 */
+                border_bottom: "1px solid #888",
 
                 a {
                     href: url,
                     onfocus: move |_event| {
                         resolve_aion(full_aion.clone(), preview_state.clone(), *id)
                     },
-                    text_decoration: "none", /* 去掉链接下划线 */
-                    color: "#00aaff", /* Solana 蓝色链接颜色 */
-                    transition: "color 0.3s ease", /* 平滑的颜色过渡效果 */
+                    text_decoration: "none",
+                    color: "#555", /* 深灰色链接颜色 */
+                    transition: "color 0.3s ease",
                     "{title}"
                 }
             }
+
 
             div {
                 display: "flex",
@@ -89,8 +94,17 @@ fn AionListing(cx: Scope, aion: AIonResponse) -> Element {
                 color: "#aaaaaa", /* 淡灰色文字 */
 
                 div {
-                    padding_left: "0.5rem",
+                    padding: "0.5rem",
+                    flex: "1", /* 占据剩余空间 */
+                    overflow: "hidden", /* 内容溢出时隐藏 */
+                    white_space: "nowrap", /* 防止文本换行 */
+                    text_overflow: "ellipsis", /* 文本溢出时显示省略号 */
                     "{introduce}"
+                }
+
+                div {
+                    padding_left: "0.5rem",
+                    "by {by}"
                 }
 
                 div {
@@ -146,16 +160,22 @@ pub async fn get_all_aions() -> Result<Vec<AIonResponse>, reqwest::Error> {
     Ok(result)
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+pub async fn get_aions_page(
+    page: usize,
+    items_per_page: usize,
+) -> Result<Vec<AIonResponse>, reqwest::Error> {
+    let url = format!(
+        "{}/rebase/list?page={}&per_page={}",
+        REBASE_BASE__API_URL,
+        page * items_per_page,
+        items_per_page
+    );
+    let aion_ids = reqwest::get(&url).await?.json::<Vec<i32>>().await?;
 
-    #[tokio::test]
-    #[ignore]
-    async fn test_get_rebase_dailys() {
-        let result = get_aion_preview(4198).await.unwrap();
-        println!("result = {:?}", result);
-        let result = get_aions(10).await.unwrap();
-        println!("result = {:?}", result);
-    }
+    let aion_futures = aion_ids.iter().map(|&aion_id| get_aion_preview(aion_id));
+    Ok(join_all(aion_futures)
+        .await
+        .into_iter()
+        .filter_map(|aion| aion.ok())
+        .collect())
 }
